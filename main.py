@@ -11,6 +11,7 @@ from typing import Optional
 
 # --- Pydantic Model for Structured Data ---
 # This defines the structure of our JSON output.
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 # 'Optional' means the field might not be found.
 class PANCardDetails(BaseModel):
     pan_number: Optional[str] = None
@@ -94,6 +95,12 @@ async def perform_pan_ocr(image: UploadFile = File(...)):
 # Main block to run the app
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
+
+
+
+
+
+
 
 
 
