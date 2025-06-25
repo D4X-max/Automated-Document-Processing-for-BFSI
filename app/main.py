@@ -4,6 +4,10 @@ import pytesseract
 from app.models import PANCardDetails
 from app.services.ocr_service import extract_text
 from app.services.pan_parser import parse_pan_details
+from app.models import PANCardDetails, AadhaarCardDetails
+from app.services.ocr_service import extract_text
+from app.services.pan_parser import parse_pan_details
+from app.services.aadhaar_parser import parse_aadhaar_details
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 app = FastAPI(title="Document Processing API")
@@ -16,6 +20,18 @@ async def ocr_pan_card_endpoint(image: UploadFile = File(...)):
     image_bytes = await image.read()
     raw_text = extract_text(image_bytes)
     structured_data = parse_pan_details(raw_text)
+    return structured_data
+
+@app.post("/ocr/aadhaar_card", response_model=AadhaarCardDetails, tags=["OCR - KYC Documents"])
+async def ocr_aadhaar_card_endpoint(image: UploadFile = File(...)):
+    """
+    Extracts structured data from an Aadhaar Card image.
+    """
+    image_bytes = await image.read()
+    # Step 1: Reuse our generic OCR service
+    raw_text = extract_text(image_bytes)
+    # Step 2: Use our new, specific Aadhaar parser
+    structured_data = parse_aadhaar_details(raw_text)
     return structured_data
 
 # This part is now optional, as we'll run the app with a command.
