@@ -15,8 +15,11 @@ class AadhaarCardDetails(BaseModel):   # for Aadhaar
     date_of_birth: Optional[str] = None
     gender: Optional[str] = None
     
+# Find the UnifiedProcessingResult class and add the new field
 class UnifiedProcessingResult(BaseModel):
     document_type: str
     is_successfully_parsed: bool
+    is_duplicate: Optional[bool] = None 
     data: Optional[Union[PANCardDetails, AadhaarCardDetails]] = None
+
 

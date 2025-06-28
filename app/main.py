@@ -10,45 +10,58 @@ from app.services.pan_parser import parse_pan_details
 from app.services.aadhaar_parser import parse_aadhaar_details
 from app.services.document_classifier import classify_document, DocumentType
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+from app.database import pan_collection, aadhaar_collection
 
 app = FastAPI(title="Document Processing API")
 
 @app.post("/v1/process_document", response_model=UnifiedProcessingResult, tags=["V1 - Core Processing"])
 async def process_document_endpoint(image: UploadFile = File(...)):
-    """
-    Accepts a document image, classifies it, and extracts structured data.
-    This is the primary endpoint for all document processing.
-    """
+    # ... (steps 1 and 2 for OCR and classification remain the same) ...
     image_bytes = await image.read()
-    
-    # Step 1: Extract raw text from the image
     raw_text = extract_text(image_bytes)
     if not raw_text.strip():
-        raise HTTPException(status_code=400, detail="Could not extract any text from the image. It might be blank or of very poor quality.")
-
-    # Step 2: Classify the document based on the text
+        raise HTTPException(status_code=400, detail="Could not extract text.")
     doc_type = classify_document(raw_text)
 
-    # Step 3: Route to the appropriate parser
+    # Step 3: Route, Parse, and VALIDATE
     if doc_type == DocumentType.PAN_CARD:
         data = parse_pan_details(raw_text)
+        is_duplicate = False
+        # Check if the PAN number exists and was parsed correctly
+        if data.pan_number:
+            if pan_collection.find_one({"pan_number": data.pan_number}):
+                is_duplicate = True
+            else:
+                # Save to DB if not a duplicate. We convert Pydantic model to dict.
+                pan_collection.insert_one(data.dict())
+        
         return UnifiedProcessingResult(
             document_type=doc_type.value,
             is_successfully_parsed=True,
+            is_duplicate=is_duplicate,
             data=data
         )
     elif doc_type == DocumentType.AADHAAR_CARD:
         data = parse_aadhaar_details(raw_text)
+        is_duplicate = False
+        # Check if Aadhaar number exists and was parsed correctly
+        if data.aadhaar_number:
+            if aadhaar_collection.find_one({"aadhaar_number": data.aadhaar_number}):
+                is_duplicate = True
+            else:
+                aadhaar_collection.insert_one(data.dict())
+
         return UnifiedProcessingResult(
             document_type=doc_type.value,
             is_successfully_parsed=True,
+            is_duplicate=is_duplicate,
             data=data
         )
     else:
-        # Document could not be identified
         return UnifiedProcessingResult(
             document_type=DocumentType.UNKNOWN.value,
             is_successfully_parsed=False,
+            is_duplicate=None,
             data=None
         )
 
