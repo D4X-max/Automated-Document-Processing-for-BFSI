@@ -4,6 +4,7 @@ from enum import Enum
 class DocumentType(Enum):
     PAN_CARD = "PAN_CARD"
     AADHAAR_CARD = "AADHAAR_CARD"
+    VOTER_ID_CARD = "VOTER_ID_CARD"
     UNKNOWN = "UNKNOWN"
 
 def classify_document(text: str) -> DocumentType:
@@ -43,6 +44,12 @@ def classify_document(text: str) -> DocumentType:
     if any(keyword in text for keyword in pan_keywords):
         # If keywords match but PAN pattern fails, still likely to be PAN
         return DocumentType.PAN_CARD
+    
+        # Keywords for Voter ID Card (in English or Hindi)
+    voter_id_keywords = ["ELECTION COMMISSION OF INDIA", "निर्वाचन आयोग"]
+    if any(keyword in text for keyword in voter_id_keywords):
+        return DocumentType.VOTER_ID_CARD
+
 
     # --------------------
     # Default: Unknown

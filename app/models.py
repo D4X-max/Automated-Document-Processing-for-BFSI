@@ -1,9 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
-import pytesseract
 from typing import Optional, Union 
 
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 class PANCardDetails(BaseModel):   # for PAN
     pan_number: Optional[str] = None
     date_of_birth: Optional[str] = None
@@ -21,5 +19,11 @@ class UnifiedProcessingResult(BaseModel):
     is_successfully_parsed: bool
     is_duplicate: Optional[bool] = None 
     data: Optional[Union[PANCardDetails, AadhaarCardDetails]] = None
+    
+class VoterIDCardDetails(BaseModel):
+    voter_id: Optional[str] = None
+    name: Optional[str] = None
+    name_hindi: Optional[str] = None
+
 
 

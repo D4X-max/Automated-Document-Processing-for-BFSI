@@ -1,16 +1,14 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
-import pytesseract
 from app.models import PANCardDetails
-from app.services.ocr_service import extract_text
 from app.services.pan_parser import parse_pan_details
 from app.models import PANCardDetails, AadhaarCardDetails, UnifiedProcessingResult
 from app.services.ocr_service import extract_text
 from app.services.pan_parser import parse_pan_details
+from app.services.voter_id_parser import parse_voter_id_details
 from app.services.aadhaar_parser import parse_aadhaar_details
 from app.services.document_classifier import classify_document, DocumentType
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 from app.database import pan_collection, aadhaar_collection
 
 app = FastAPI(title="Document Processing API")
@@ -69,6 +67,16 @@ async def process_document_endpoint(image: UploadFile = File(...)):
             document_type=doc_type.value,
             is_successfully_parsed=True,
             is_duplicate=is_duplicate,
+            data=data
+        )
+        
+    elif doc_type == DocumentType.VOTER_ID_CARD:
+        # We won't add DB validation for this one yet to keep it simple
+        data = parse_voter_id_details(raw_text)
+        return UnifiedProcessingResult(
+            document_type=doc_type.value,
+            is_successfully_parsed=True,
+            is_duplicate=False, # Defaulting to false for now
             data=data
         )
     else:
