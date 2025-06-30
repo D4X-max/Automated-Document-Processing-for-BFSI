@@ -60,3 +60,28 @@ instance/
 
 # Ignore uploaded test images if you want (optional)
 test_images/
+
+# ===================================================================
+# React / Frontend (inside 'doc-automation-ui/')
+# ===================================================================
+# Dependency directories
+doc-automation-ui/node_modules/
+
+# Production build folder
+doc-automation-ui/build/
+
+# Test reports
+doc-automation-ui/coverage/
+
+# Local environment variables
+# CRITICAL for security
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ===================================================================
+# Secret Files (CRITICAL)
+# ===================================================================
+# Backend environment file
+.env

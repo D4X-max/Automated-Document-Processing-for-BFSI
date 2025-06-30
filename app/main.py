@@ -1,4 +1,5 @@
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import pytesseract
 from app.models import PANCardDetails
@@ -13,6 +14,19 @@ pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tessera
 from app.database import pan_collection, aadhaar_collection
 
 app = FastAPI(title="Document Processing API")
+
+# This allows your React app to communicate with the backend.
+origins = [
+    "http://localhost:3000", # The origin of your React app
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"], # Allows all methods (GET, POST, etc.)
+    allow_headers=["*"], # Allows all headers
+)
 
 @app.post("/v1/process_document", response_model=UnifiedProcessingResult, tags=["V1 - Core Processing"])
 async def process_document_endpoint(image: UploadFile = File(...)):
