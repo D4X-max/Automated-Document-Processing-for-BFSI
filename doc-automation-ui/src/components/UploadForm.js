@@ -25,9 +25,7 @@ function UploadForm() {
     setError(null);
     setProcessingResult(null);
 
-    // FormData is essential for sending files in HTTP requests[1][2][3].
     const formData = new FormData();
-    // The key 'image' must match the name of the argument in our FastAPI endpoint.
     formData.append('image', selectedFile);
 
     try {
@@ -42,8 +40,18 @@ function UploadForm() {
       );
       setProcessingResult(response.data);
     } catch (err) {
-      setError("An error occurred during processing. Please try again.");
+      // --- THIS IS THE IMPROVED ERROR HANDLING BLOCK ---
+      // It looks inside the error to find a specific message from the backend.
+      let errorMessage = "An unknown error occurred. Please check the console.";
+      if (err.response && err.response.data && err.response.data.detail) {
+        // Use the specific error message from our FastAPI backend
+        errorMessage = err.response.data.detail;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      setError(errorMessage);
       console.error(err);
+      // --------------------------------------------------
     } finally {
       setIsLoading(false);
     }
